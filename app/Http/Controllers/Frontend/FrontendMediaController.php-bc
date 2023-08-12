@@ -1,0 +1,68 @@
+<?php
+
+namespace App\Http\Controllers\Frontend;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Media;
+Use App\Course;
+Use App\Photo;
+use Illuminate\Support\Collection;
+
+class FrontendMediaController extends Controller
+{
+   
+    
+    public function video()
+    {
+        
+        $courseList = Course::where('is_active', 1)->where('category', 1)->get();     
+
+            $videos = Media::select('id','title','course','video','order','is_active')
+                    ->where('is_active', 1)
+                    ->where('file_type', 'video')
+                    ->orderBy('order', 'desc')                        
+                    ->paginate(12);
+
+        return view('frontend.pages.video',compact('videos','courseList'));
+    }
+
+    public function filterVideo(Request $request)
+    {
+        dd($request);
+        $course = $request->course_name;
+
+    }
+
+
+    
+    public function sheet()
+    {
+        $courses = Course::where('is_active',1)->pluck('course_name','id')->all();
+        $course_name = auth()->user()->course_title;   
+
+        if( auth()->user()->is_admin == 1 ) {
+
+            $sheets = Media::select('title','course_title','pdf','order','is_active')
+                    ->where('is_active',1)
+                    ->where('file_type', 'pdf')
+                    ->orderBy('order', 'desc')
+                    ->get();
+        }else{
+            $sheets = Media::select('title','course_title','pdf','order','is_active')
+                    ->where('is_active',1)
+                    ->where('file_type', 'pdf')
+                    ->where('course_title', $course_name)
+                    ->orderBy('order', 'desc')
+                    ->get();
+        }
+        return view('frontend.pages.pdf',compact('courses','sheets'));
+    }
+
+    public function gallery()
+    {
+        $galleryImage = Photo::where('is_active',1)->where('image_type','gallery')->get();
+
+        return view('frontend.pages.gallery',compact('galleryImage'));
+    }
+
+}
